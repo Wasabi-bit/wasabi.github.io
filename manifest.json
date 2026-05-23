@@ -1,0 +1,25 @@
+{
+  "name": "家庭语音记账",
+  "short_name": "家庭账本",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f7f5",
+  "theme_color": "#176b5d",
+  "lang": "zh-CN",
+  "orientation": "portrait",
+  "description": "适合家庭成员共同使用的语音记账工具。",
+  "icons": [
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./app-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

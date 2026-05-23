@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#176b5d" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="家庭账本" />
+    <title>语音记账</title>
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" href="./app-icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">家庭语音记账</p>
+          <h1>家庭账本</h1>
+          <p class="date-line" id="dateLine"></p>
+        </div>
+        <div class="top-actions">
+          <button class="icon-button" id="membersButton" type="button" title="家庭成员" aria-label="家庭成员">
+            <span aria-hidden="true">+</span>
+          </button>
+          <button class="icon-button" id="exportButton" type="button" title="导出账单" aria-label="导出账单">
+            <span aria-hidden="true">↓</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="app-main">
+        <section class="app-view active" id="homeView" data-view="home">
+          <section class="member-panel" aria-label="当前成员">
+            <div class="section-title compact">
+              <h2>当前记账人</h2>
+              <button class="text-button" id="manageMembersButton" type="button">管理</button>
+            </div>
+            <div class="member-tabs" id="memberTabs"></div>
+          </section>
+
+          <section class="summary-grid" aria-label="账单概览">
+            <article class="metric">
+              <span>今日支出</span>
+              <strong id="todayExpense">¥0.00</strong>
+            </article>
+            <article class="metric">
+              <span>本月支出</span>
+              <strong id="monthExpense">¥0.00</strong>
+            </article>
+            <article class="metric">
+              <span>本月收入</span>
+              <strong id="monthIncome">¥0.00</strong>
+            </article>
+          </section>
+
+          <div class="list-panel">
+            <div class="section-title">
+              <h2>最近账单</h2>
+              <button class="text-button" id="clearButton" type="button">清空</button>
+            </div>
+            <div class="empty-state" id="emptyState">还没有账单，先记一笔试试。</div>
+            <ul class="bill-list" id="billList"></ul>
+          </div>
+        </section>
+
+        <section class="app-view" id="recordView" data-view="record">
+          <section class="input-panel" aria-label="语音记账">
+            <div class="mode-row" role="tablist" aria-label="记账类型">
+              <button class="segmented active" id="expenseMode" type="button">支出</button>
+              <button class="segmented" id="incomeMode" type="button">收入</button>
+            </div>
+
+            <label class="field-label" for="voiceText">说一句账单</label>
+            <div class="voice-row">
+              <textarea id="voiceText" rows="4" placeholder="例如：我用微信花了20元吃饭"></textarea>
+              <button class="mic-button" id="micButton" type="button" title="语音输入" aria-label="语音输入">
+                <span aria-hidden="true">●</span>
+              </button>
+            </div>
+            <p class="hint" id="speechHint">如果浏览器不支持语音识别，可以直接打字。</p>
+
+            <div class="action-row">
+              <button class="primary-button" id="parseButton" type="button">解析账单</button>
+              <button class="secondary-button" id="sampleButton" type="button">试一句</button>
+            </div>
+          </section>
+
+          <section class="confirm-panel hidden" id="confirmPanel" aria-label="确认账单">
+            <div class="section-title">
+              <h2>确认这笔账</h2>
+              <p id="reviewMessage">请检查识别结果。</p>
+            </div>
+
+            <form class="form-grid" id="billForm">
+              <label>
+                金额
+                <input id="amountInput" type="number" inputmode="decimal" min="0" step="0.01" required />
+              </label>
+              <label>
+                类型
+                <select id="typeInput">
+                  <option value="expense">支出</option>
+                  <option value="income">收入</option>
+                </select>
+              </label>
+              <label>
+                分类
+                <select id="categoryInput"></select>
+              </label>
+              <label>
+                支付方式
+                <select id="paymentInput"></select>
+              </label>
+              <label>
+                成员
+                <select id="memberInput"></select>
+              </label>
+              <label class="wide">
+                备注
+                <input id="noteInput" type="text" placeholder="比如：午饭、音乐会员、工资" />
+              </label>
+            </form>
+
+            <div class="action-row">
+              <button class="primary-button" id="saveButton" type="button">保存</button>
+              <button class="secondary-button" id="cancelButton" type="button">取消</button>
+            </div>
+          </section>
+        </section>
+
+        <section class="app-view" id="statsView" data-view="stats">
+          <section class="content-grid">
+          <div class="stats-panel">
+            <div class="section-title">
+              <h2>分类统计</h2>
+              <p>按本月支出统计</p>
+            </div>
+            <div class="category-bars" id="categoryBars"></div>
+          </div>
+
+          <div class="stats-panel">
+            <div class="section-title">
+              <h2>成员统计</h2>
+              <p>按本月支出统计</p>
+            </div>
+            <div class="category-bars" id="memberBars"></div>
+          </div>
+          </section>
+        </section>
+
+        <section class="app-view" id="memberView" data-view="members">
+          <div class="stats-panel">
+            <div class="section-title">
+              <h2>家庭成员</h2>
+              <p>当前账本只保存在这台设备</p>
+            </div>
+            <div class="member-form inline">
+              <input id="memberNameInlineInput" type="text" maxlength="12" placeholder="输入名字，比如：妈妈" />
+              <button class="primary-button" id="addMemberInlineButton" type="button">添加</button>
+            </div>
+            <ul class="member-list" id="memberListInline"></ul>
+          </div>
+        </section>
+      </main>
+
+      <nav class="mobile-dock" aria-label="快捷操作">
+        <button class="dock-tab active" data-target-view="home" type="button">首页</button>
+        <button class="dock-tab primary" data-target-view="record" type="button">记账</button>
+        <button class="dock-tab" data-target-view="stats" type="button">统计</button>
+        <button class="dock-tab" data-target-view="members" type="button">成员</button>
+      </nav>
+    </div>
+
+    <div class="modal hidden" id="memberDialog" role="dialog" aria-modal="true" aria-labelledby="memberDialogTitle">
+      <div class="modal-card">
+        <div class="section-title">
+          <h2 id="memberDialogTitle">家庭成员</h2>
+          <button class="text-button" id="closeMembersButton" type="button">关闭</button>
+        </div>
+        <div class="member-form">
+          <input id="memberNameInput" type="text" maxlength="12" placeholder="输入名字，比如：爸爸" />
+          <button class="primary-button" id="addMemberButton" type="button">添加</button>
+        </div>
+        <ul class="member-list" id="memberList"></ul>
+        <p class="hint">删除成员不会删除旧账单，旧账单会继续显示原来的名字。</p>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
