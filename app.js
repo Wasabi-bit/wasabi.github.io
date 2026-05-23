@@ -29,6 +29,8 @@ const samples = [
 
 let currentMode = "expense";
 let recognition = null;
+let isRecording = false;
+let recognitionTimer = null;
 let pendingBill = null;
 
 const elements = {
@@ -160,6 +162,28 @@ function setMode(mode) {
   elements.expenseMode.classList.toggle("active", mode === "expense");
   elements.incomeMode.classList.toggle("active", mode === "income");
   elements.voiceText.placeholder = mode === "expense" ? "例如：我用微信花了20元吃饭" : "例如：今天工资到账5000";
+}
+
+function setRecording(recording, message) {
+  isRecording = recording;
+  elements.micButton.classList.toggle("recording", recording);
+  elements.micButton.setAttribute("aria-label", recording ? "停止语音输入" : "语音输入");
+  elements.micButton.title = recording ? "停止语音输入" : "语音输入";
+  if (message) elements.speechHint.textContent = message;
+
+  if (!recording && recognitionTimer) {
+    clearTimeout(recognitionTimer);
+    recognitionTimer = null;
+  }
+}
+
+function stopRecognition() {
+  if (!recognition || !isRecording) return;
+  try {
+    recognition.stop();
+  } catch {
+    setRecording(false, "语音输入已停止。");
+  }
 }
 
 function fillSelect(select, options, value) {
@@ -523,22 +547,27 @@ function setupSpeech() {
   recognition.continuous = false;
 
   recognition.onstart = () => {
-    elements.micButton.classList.add("recording");
-    elements.speechHint.textContent = "正在听你说话...";
+    setRecording(true, "正在听你说话，识别到一句后会自动停止。");
+    recognitionTimer = setTimeout(() => {
+      stopRecognition();
+      elements.speechHint.textContent = "已自动停止，如果没识别到可以再点一次。";
+    }, 10000);
   };
 
   recognition.onresult = (event) => {
     const text = event.results[0][0].transcript;
     elements.voiceText.value = text;
     elements.speechHint.textContent = "识别完成，可以解析账单。";
+    stopRecognition();
   };
 
   recognition.onerror = () => {
     elements.speechHint.textContent = "语音识别失败，可以再试一次或直接打字。";
+    setRecording(false);
   };
 
   recognition.onend = () => {
-    elements.micButton.classList.remove("recording");
+    setRecording(false);
   };
 }
 
@@ -583,7 +612,19 @@ elements.sampleButton.addEventListener("click", () => {
   elements.voiceText.value = sample;
   showConfirmation(parseBill(sample));
 });
-elements.micButton.addEventListener("click", () => recognition?.start());
+elements.micButton.addEventListener("click", () => {
+  if (!recognition) return;
+  if (isRecording) {
+    stopRecognition();
+    elements.speechHint.textContent = "语音输入已停止。";
+    return;
+  }
+  try {
+    recognition.start();
+  } catch {
+    elements.speechHint.textContent = "语音识别正在准备中，请稍后再试。";
+  }
+});
 elements.typeInput.addEventListener("change", () => {
   const type = elements.typeInput.value;
   fillSelect(elements.categoryInput, type === "income" ? incomeCategories : expenseCategories, type === "income" ? "其他收入" : "日常生活");
@@ -622,3 +663,7 @@ render();
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   navigator.serviceWorker.register("./sw.js").catch(() => {});
 }
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) stopRecognition();
+});
