@@ -69,13 +69,15 @@ const elements = {
   goalTargetText: document.querySelector("#goalTargetText"),
   goalFill: document.querySelector("#goalFill"),
   goalPercent: document.querySelector("#goalPercent"),
+  toggleGoalsButton: document.querySelector("#toggleGoalsButton"),
+  goalDrawer: document.querySelector("#goalDrawer"),
+  goalList: document.querySelector("#goalList"),
   goalNameInput: document.querySelector("#goalNameInput"),
   goalTargetInput: document.querySelector("#goalTargetInput"),
   goalSavedInput: document.querySelector("#goalSavedInput"),
   goalAddInput: document.querySelector("#goalAddInput"),
   saveGoalButton: document.querySelector("#saveGoalButton"),
   addGoalSavingButton: document.querySelector("#addGoalSavingButton"),
-  resetGoalButton: document.querySelector("#resetGoalButton"),
   billList: document.querySelector("#billList"),
   emptyState: document.querySelector("#emptyState"),
   categoryBars: document.querySelector("#categoryBars"),
@@ -131,14 +133,34 @@ function saveMembers(members) {
 
 function loadSavingGoal() {
   try {
-    return JSON.parse(localStorage.getItem(SAVING_GOAL_KEY)) || { name: "", target: 0, saved: 0 };
+    const saved = JSON.parse(localStorage.getItem(SAVING_GOAL_KEY));
+    if (!saved) return { goals: [], primaryId: null };
+    if (Array.isArray(saved.goals)) return saved;
+    if (saved.name && saved.target) {
+      const migrated = {
+        goals: [{ id: createId(), name: saved.name, target: Number(saved.target), saved: Number(saved.saved || 0) }],
+        primaryId: null,
+      };
+      migrated.primaryId = migrated.goals[0].id;
+      saveSavingGoal(migrated);
+      return migrated;
+    }
+    return { goals: [], primaryId: null };
   } catch {
-    return { name: "", target: 0, saved: 0 };
+    return { goals: [], primaryId: null };
   }
 }
 
 function saveSavingGoal(goal) {
-  localStorage.setItem(SAVING_GOAL_KEY, JSON.stringify(goal));
+  if (goal?.name && goal?.target && !Array.isArray(goal.goals)) {
+    const migratedGoal = { id: createId(), name: goal.name, target: Number(goal.target), saved: Number(goal.saved || 0) };
+    localStorage.setItem(SAVING_GOAL_KEY, JSON.stringify({ goals: [migratedGoal], primaryId: migratedGoal.id }));
+    return;
+  }
+
+  const goals = Array.isArray(goal?.goals) ? goal.goals : [];
+  const primaryId = goals.some((item) => item.id === goal?.primaryId) ? goal.primaryId : goals[0]?.id || null;
+  localStorage.setItem(SAVING_GOAL_KEY, JSON.stringify({ goals, primaryId }));
 }
 
 function getActiveMember() {
@@ -453,22 +475,53 @@ function renderMembers() {
 }
 
 function renderSavingGoal() {
-  const goal = loadSavingGoal();
-  const target = Number(goal.target || 0);
-  const saved = Number(goal.saved || 0);
-  const hasGoal = Boolean(goal.name && target > 0);
+  const data = loadSavingGoal();
+  const goals = data.goals || [];
+  const primaryGoal = goals.find((goal) => goal.id === data.primaryId) || goals[0];
+  const target = Number(primaryGoal?.target || 0);
+  const saved = Number(primaryGoal?.saved || 0);
+  const hasGoal = Boolean(primaryGoal?.name && target > 0);
   const percent = hasGoal ? Math.min((saved / target) * 100, 100) : 0;
   const remaining = Math.max(target - saved, 0);
 
-  elements.goalTitle.textContent = hasGoal ? goal.name : "存钱目标";
+  elements.goalTitle.textContent = hasGoal ? primaryGoal.name : "存钱目标";
   elements.goalSubtitle.textContent = hasGoal ? `还差 ${formatMoney(remaining)} 就完成了` : "设定一个想买的东西，慢慢靠近它。";
   elements.goalSavedText.textContent = formatMoney(saved);
   elements.goalTargetText.textContent = hasGoal ? `目标 ${formatMoney(target)}` : "目标 ¥0.00";
   elements.goalFill.style.width = `${percent}%`;
-  elements.goalPercent.textContent = hasGoal ? `已完成 ${Math.round(percent)}%` : "还没有设置目标";
-  elements.goalNameInput.value = goal.name || "";
-  elements.goalTargetInput.value = target || "";
-  elements.goalSavedInput.value = saved || "";
+  elements.goalPercent.textContent = hasGoal ? `主目标 · 已完成 ${Math.round(percent)}%` : "还没有设置目标";
+  elements.goalList.innerHTML = "";
+
+  if (!goals.length) {
+    elements.goalList.innerHTML = `<div class="empty-state inline">还没有其他目标，先添加一个。</div>`;
+    return;
+  }
+
+  goals.forEach((goal) => {
+    const itemTarget = Number(goal.target || 0);
+    const itemSaved = Number(goal.saved || 0);
+    const itemPercent = itemTarget > 0 ? Math.min((itemSaved / itemTarget) * 100, 100) : 0;
+    const row = document.createElement("div");
+    row.className = `goal-item${goal.id === data.primaryId ? " primary-goal" : ""}`;
+    row.innerHTML = `
+      <div class="goal-item-main">
+        <strong>${escapeHtml(goal.name)}</strong>
+        <span>${formatMoney(itemSaved)} / ${formatMoney(itemTarget)} · ${Math.round(itemPercent)}%</span>
+        <div class="goal-track small">
+          <div class="goal-fill" style="width: ${itemPercent}%"></div>
+        </div>
+      </div>
+      <div class="goal-item-actions">
+        <button class="text-button set-primary-goal" type="button">${goal.id === data.primaryId ? "主要" : "设为主要"}</button>
+        <button class="text-button add-to-goal" type="button">存入</button>
+        <button class="text-button delete-goal" type="button">删除</button>
+      </div>
+    `;
+    row.querySelector(".set-primary-goal").addEventListener("click", () => setPrimaryGoal(goal.id));
+    row.querySelector(".add-to-goal").addEventListener("click", () => addSavingToGoal(goal.id));
+    row.querySelector(".delete-goal").addEventListener("click", () => deleteGoal(goal.id));
+    elements.goalList.appendChild(row);
+  });
 }
 
 function saveGoalFromForm() {
@@ -481,32 +534,66 @@ function saveGoalFromForm() {
     return;
   }
 
-  saveSavingGoal({ name, target, saved: Math.max(saved, 0) });
+  const data = loadSavingGoal();
+  const goal = { id: createId(), name, target, saved: Math.max(saved, 0) };
+  saveSavingGoal({
+    goals: [goal, ...(data.goals || [])],
+    primaryId: data.primaryId || goal.id,
+  });
+  elements.goalNameInput.value = "";
+  elements.goalTargetInput.value = "";
+  elements.goalSavedInput.value = "";
   renderSavingGoal();
 }
 
 function addGoalSaving() {
-  const amount = Number(elements.goalAddInput.value);
+  const data = loadSavingGoal();
+  const primaryId = data.primaryId || data.goals?.[0]?.id;
+  addSavingToGoal(primaryId, Number(elements.goalAddInput.value));
+}
+
+function addSavingToGoal(goalId, presetAmount = null) {
+  if (!goalId) {
+    elements.goalPercent.textContent = "先添加一个目标，再加入进度。";
+    return;
+  }
+
+  const data = loadSavingGoal();
+  const goal = data.goals.find((item) => item.id === goalId);
+  if (!goal) return;
+
+  const amount = presetAmount ?? Number(prompt(`给“${goal.name}”存入多少？`));
   if (!amount || amount <= 0) {
-    elements.goalPercent.textContent = "请输入这次存入的金额。";
+    elements.goalPercent.textContent = "请输入有效的存入金额。";
     return;
   }
 
-  const goal = loadSavingGoal();
-  if (!goal.name || !goal.target) {
-    elements.goalPercent.textContent = "先保存一个目标，再加入进度。";
-    return;
-  }
-
-  saveSavingGoal({ ...goal, saved: Number(goal.saved || 0) + amount });
+  saveSavingGoal({
+    ...data,
+    goals: data.goals.map((item) => (item.id === goalId ? { ...item, saved: Number(item.saved || 0) + amount } : item)),
+  });
   elements.goalAddInput.value = "";
   renderSavingGoal();
 }
 
-function resetSavingGoal() {
-  if (!confirm("确定重置存钱目标吗？")) return;
-  saveSavingGoal({ name: "", target: 0, saved: 0 });
+function setPrimaryGoal(goalId) {
+  const data = loadSavingGoal();
+  saveSavingGoal({ ...data, primaryId: goalId });
   renderSavingGoal();
+}
+
+function deleteGoal(goalId) {
+  const data = loadSavingGoal();
+  const goal = data.goals.find((item) => item.id === goalId);
+  if (!goal || !confirm(`确定删除“${goal.name}”这个目标吗？`)) return;
+  saveSavingGoal({ ...data, goals: data.goals.filter((item) => item.id !== goalId) });
+  renderSavingGoal();
+}
+
+function toggleGoalDrawer() {
+  const hidden = elements.goalDrawer.classList.toggle("hidden");
+  elements.toggleGoalsButton.textContent = hidden ? "展开" : "收起";
+  elements.toggleGoalsButton.setAttribute("aria-expanded", String(!hidden));
 }
 
 function renderBills(bills) {
@@ -764,7 +851,7 @@ elements.membersButton.addEventListener("click", openMemberDialog);
 elements.manageMembersButton.addEventListener("click", () => setView("members"));
 elements.saveGoalButton.addEventListener("click", saveGoalFromForm);
 elements.addGoalSavingButton.addEventListener("click", addGoalSaving);
-elements.resetGoalButton.addEventListener("click", resetSavingGoal);
+elements.toggleGoalsButton.addEventListener("click", toggleGoalDrawer);
 elements.goalAddInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") addGoalSaving();
 });

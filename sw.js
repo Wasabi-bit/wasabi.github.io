@@ -1,4 +1,4 @@
-const CACHE_NAME = "family-voice-book-v2";
+const CACHE_NAME = "family-voice-book-v3";
 const APP_FILES = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.json", "./app-icon.svg", "./apple-touch-icon.png"];
 
 self.addEventListener("install", (event) => {

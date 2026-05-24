@@ -422,6 +422,74 @@ select:focus {
   grid-template-columns: 1fr auto;
 }
 
+.goal-drawer {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  animation: drawer-slide 220ms ease;
+}
+
+.goal-list {
+  display: grid;
+  gap: 10px;
+}
+
+.goal-item {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfc;
+}
+
+.goal-item.primary-goal {
+  border-color: rgba(23, 107, 93, 0.36);
+  background: rgba(23, 107, 93, 0.06);
+}
+
+.goal-item-main {
+  display: grid;
+  gap: 6px;
+}
+
+.goal-item-main strong {
+  overflow-wrap: anywhere;
+}
+
+.goal-item-main span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.goal-track.small {
+  height: 8px;
+}
+
+.goal-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.empty-state.inline {
+  display: block;
+  padding: 18px 12px;
+}
+
+@keyframes drawer-slide {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .bill-list {
   display: grid;
   gap: 10px;

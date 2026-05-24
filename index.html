@@ -62,7 +62,7 @@
                 <h2 id="goalTitle">存钱目标</h2>
                 <p id="goalSubtitle">设定一个想买的东西，慢慢靠近它。</p>
               </div>
-              <button class="text-button" id="resetGoalButton" type="button">重置</button>
+              <button class="text-button" id="toggleGoalsButton" type="button" aria-expanded="false">展开</button>
             </div>
             <div class="goal-progress">
               <div class="goal-progress-top">
@@ -74,15 +74,18 @@
               </div>
               <p class="goal-percent" id="goalPercent">还没有设置目标</p>
             </div>
-            <div class="goal-form">
+            <div class="goal-add">
+              <input id="goalAddInput" type="number" inputmode="decimal" min="0" step="1" placeholder="给主目标存入多少" />
+              <button class="secondary-button" id="addGoalSavingButton" type="button">加入主目标</button>
+            </div>
+            <div class="goal-drawer hidden" id="goalDrawer">
+              <div class="goal-form">
               <input id="goalNameInput" type="text" maxlength="20" placeholder="目标，比如：Switch" />
               <input id="goalTargetInput" type="number" inputmode="decimal" min="0" step="1" placeholder="目标金额" />
               <input id="goalSavedInput" type="number" inputmode="decimal" min="0" step="1" placeholder="已存金额" />
-              <button class="primary-button" id="saveGoalButton" type="button">保存目标</button>
-            </div>
-            <div class="goal-add">
-              <input id="goalAddInput" type="number" inputmode="decimal" min="0" step="1" placeholder="这次存入多少" />
-              <button class="secondary-button" id="addGoalSavingButton" type="button">加入进度</button>
+                <button class="primary-button" id="saveGoalButton" type="button">添加目标</button>
+              </div>
+              <div class="goal-list" id="goalList"></div>
             </div>
           </section>
 
