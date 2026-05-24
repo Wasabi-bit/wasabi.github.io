@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>家庭账本图标方案</title>
+    <style>
+      :root {
+        --bg: #f4f7f5;
+        --surface: #ffffff;
+        --text: #1e2722;
+        --muted: #6c7770;
+        --line: #dce5df;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      }
+
+      main {
+        width: min(960px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 34px 0;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 36px;
+        letter-spacing: 0;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .top-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .app-link {
+        flex: 0 0 auto;
+        border-radius: 8px;
+        background: #126b5a;
+        color: white;
+        padding: 12px 16px;
+        text-decoration: none;
+        font-weight: 800;
+      }
+
+      .card {
+        display: grid;
+        gap: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        padding: 18px;
+      }
+
+      .icon {
+        width: 132px;
+        height: 132px;
+        border-radius: 30px;
+        box-shadow: 0 18px 34px rgba(28, 47, 38, 0.14);
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      .meta {
+        display: grid;
+        gap: 4px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      @media (max-width: 760px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="top-row">
+        <div>
+          <h1>家庭账本图标方案</h1>
+          <p>三套不同方向：清爽账本、语音记账、家庭目标。</p>
+        </div>
+        <a class="app-link" href="./index.html">打开家庭账本</a>
+      </div>
+      <section class="grid">
+        <article class="card">
+          <img class="icon" src="./assets/icons/icon-ledger.svg" alt="清爽账本图标" />
+          <h2>方案 A：清爽账本</h2>
+          <div class="meta">
+            <span>关键词：稳定、记账、进度</span>
+            <span>适合做默认图标，识别最直接。</span>
+          </div>
+        </article>
+        <article class="card">
+          <img class="icon" src="./assets/icons/icon-voice.svg" alt="语音记账图标" />
+          <h2>方案 B：语音记账</h2>
+          <div class="meta">
+            <span>关键词：语音、快速、醒目</span>
+            <span>颜色更有记忆点，偏工具 App。</span>
+          </div>
+        </article>
+        <article class="card">
+          <img class="icon" src="./assets/icons/icon-family-goal.svg" alt="家庭目标图标" />
+          <h2>方案 C：家庭目标</h2>
+          <div class="meta">
+            <span>关键词：家庭、目标、成长</span>
+            <span>更温暖，适合强调家庭共同账本。</span>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

@@ -6,8 +6,9 @@
   --text: #1e2722;
   --muted: #6c7770;
   --line: #dce5df;
-  --accent: #176b5d;
-  --accent-strong: #0e4f44;
+  --accent: #126b5a;
+  --accent-strong: #0b4f41;
+  --gold: #ffcf57;
   --income: #246b45;
   --expense: #b3463c;
   --warning: #9a6519;
@@ -61,6 +62,7 @@ button {
   margin: 0 0 8px;
   color: var(--accent);
   font-weight: 700;
+  font-size: 13px;
 }
 
 h1,
@@ -70,7 +72,7 @@ p {
 }
 
 h1 {
-  font-size: clamp(30px, 5vw, 42px);
+  font-size: clamp(28px, 5vw, 38px);
   line-height: 1.08;
   letter-spacing: 0;
 }
@@ -124,11 +126,24 @@ h2 {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 12px 28px rgba(28, 47, 38, 0.06);
 }
 
 .metric {
   padding: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric::after {
+  content: "";
+  position: absolute;
+  right: -20px;
+  top: -24px;
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  background: rgba(255, 207, 87, 0.22);
 }
 
 .metric span,
@@ -138,9 +153,11 @@ h2 {
 }
 
 .metric strong {
+  position: relative;
   display: block;
   margin-top: 8px;
   font-size: 28px;
+  z-index: 1;
 }
 
 .input-panel,
@@ -403,7 +420,7 @@ select:focus {
   width: 0;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #176b5d, #4f6f9f);
+  background: linear-gradient(90deg, var(--accent), var(--gold));
   transition: width 460ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -507,6 +524,11 @@ select:focus {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fbfdfc;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.bill-item:active {
+  transform: scale(0.985);
 }
 
 .bill-main strong {
@@ -546,7 +568,7 @@ select:focus {
   height: 32px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--surface-strong);
+  background: #f6faf8;
   color: var(--muted);
   font-size: 15px;
   font-weight: 800;
@@ -680,6 +702,45 @@ select:focus {
   margin-bottom: 10px;
 }
 
+.icon-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.icon-option {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  min-height: 152px;
+  padding: 12px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfc;
+  text-align: center;
+}
+
+.icon-option.active {
+  border-color: rgba(18, 107, 90, 0.42);
+  background: rgba(18, 107, 90, 0.06);
+}
+
+.icon-option img {
+  width: 66px;
+  height: 66px;
+  border-radius: 16px;
+  box-shadow: 0 10px 22px rgba(28, 47, 38, 0.12);
+}
+
+.icon-option strong {
+  font-size: 14px;
+}
+
+.icon-option span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .mobile-dock {
   position: fixed;
   left: 50%;
@@ -716,6 +777,16 @@ select:focus {
   background: var(--accent);
   color: white;
   box-shadow: 0 8px 18px rgba(23, 107, 93, 0.22);
+}
+
+.mobile-dock button.active::after {
+  content: "";
+  display: block;
+  width: 18px;
+  height: 3px;
+  margin: 3px auto 0;
+  border-radius: 999px;
+  background: var(--gold);
 }
 
 .mobile-dock button.pop {
@@ -805,6 +876,22 @@ select:focus {
 
   .backup-actions {
     grid-template-columns: 1fr;
+  }
+
+  .icon-options {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .icon-option {
+    min-height: 136px;
+    padding: 10px 6px;
+  }
+
+  .icon-option img {
+    width: 54px;
+    height: 54px;
+    border-radius: 13px;
   }
 
   .goal-progress-top {
