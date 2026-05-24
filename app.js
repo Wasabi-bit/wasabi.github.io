@@ -33,6 +33,7 @@ let recognition = null;
 let isRecording = false;
 let recognitionTimer = null;
 let pendingBill = null;
+let editingBillId = null;
 
 const elements = {
   expenseMode: document.querySelector("#expenseMode"),
@@ -87,6 +88,9 @@ const elements = {
   memberNameInlineInput: document.querySelector("#memberNameInlineInput"),
   addMemberInlineButton: document.querySelector("#addMemberInlineButton"),
   memberListInline: document.querySelector("#memberListInline"),
+  exportBackupButton: document.querySelector("#exportBackupButton"),
+  importBackupButton: document.querySelector("#importBackupButton"),
+  backupFileInput: document.querySelector("#backupFileInput"),
   appViews: document.querySelectorAll(".app-view"),
   dockTabs: document.querySelectorAll(".dock-tab"),
 };
@@ -326,6 +330,7 @@ function parseBill(text) {
 
 function showConfirmation(bill) {
   pendingBill = bill;
+  editingBillId = bill.id && loadBills().some((item) => item.id === bill.id) ? bill.id : null;
   const categories = bill.type === "income" ? incomeCategories : expenseCategories;
 
   elements.amountInput.value = bill.amount ?? "";
@@ -365,13 +370,27 @@ function addBillFromForm() {
   };
 
   const bills = loadBills();
-  bills.unshift(bill);
+  if (editingBillId) {
+    const index = bills.findIndex((item) => item.id === editingBillId);
+    if (index >= 0) bills[index] = bill;
+  } else {
+    bills.unshift(bill);
+  }
   saveBills(bills);
   elements.confirmPanel.classList.add("hidden");
   elements.voiceText.value = "";
   pendingBill = null;
+  editingBillId = null;
   render();
   setView("home");
+}
+
+function editBill(id) {
+  const bill = loadBills().find((item) => item.id === id);
+  if (!bill) return;
+  setView("record");
+  elements.voiceText.value = bill.rawText || bill.note || "";
+  showConfirmation({ ...bill, needsReview: false, missingFields: [] });
 }
 
 function deleteBill(id) {
@@ -508,9 +527,13 @@ function renderBills(bills) {
       </div>
       <div class="bill-side">
         <div class="bill-amount ${bill.type}">${sign}${formatMoney(bill.amount)}</div>
-        <button class="delete-bill" type="button" title="删除账单" aria-label="删除账单">×</button>
+        <div class="bill-tools">
+          <button class="edit-bill" type="button" title="编辑账单" aria-label="编辑账单">改</button>
+          <button class="delete-bill" type="button" title="删除账单" aria-label="删除账单">×</button>
+        </div>
       </div>
     `;
+    item.querySelector(".edit-bill").addEventListener("click", () => editBill(bill.id));
     item.querySelector(".delete-bill").addEventListener("click", () => deleteBill(bill.id));
     elements.billList.appendChild(item);
   });
@@ -685,6 +708,56 @@ function exportBills() {
   URL.revokeObjectURL(link.href);
 }
 
+function downloadJson(filename, data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function exportBackup() {
+  const stamp = new Date().toISOString().slice(0, 10);
+  downloadJson(`家庭账本完整备份-${stamp}.json`, {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    bills: loadBills(),
+    members: loadMembers(),
+    activeMember: getActiveMember(),
+    savingGoal: loadSavingGoal(),
+  });
+}
+
+function importBackupFile(file) {
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!Array.isArray(data.bills) || !Array.isArray(data.members)) {
+        throw new Error("invalid backup");
+      }
+
+      if (!confirm("导入备份会覆盖当前本机账本，确定继续吗？")) return;
+
+      saveBills(data.bills);
+      saveMembers(data.members.length ? data.members : defaultMembers);
+      saveSavingGoal(data.savingGoal || { name: "", target: 0, saved: 0 });
+      localStorage.setItem(ACTIVE_MEMBER_KEY, data.activeMember || loadMembers()[0]);
+      render();
+      setView("home");
+      alert("备份导入完成。");
+    } catch {
+      alert("这个备份文件无法识别，请确认选择的是完整备份 JSON 文件。");
+    } finally {
+      elements.backupFileInput.value = "";
+    }
+  };
+  reader.readAsText(file, "utf-8");
+}
+
 elements.expenseMode.addEventListener("click", () => setMode("expense"));
 elements.incomeMode.addEventListener("click", () => setMode("income"));
 elements.membersButton.addEventListener("click", openMemberDialog);
@@ -751,6 +824,9 @@ elements.clearButton.addEventListener("click", () => {
   }
 });
 elements.exportButton.addEventListener("click", exportBills);
+elements.exportBackupButton.addEventListener("click", exportBackup);
+elements.importBackupButton.addEventListener("click", () => elements.backupFileInput.click());
+elements.backupFileInput.addEventListener("change", () => importBackupFile(elements.backupFileInput.files[0]));
 
 setMode("expense");
 setupSpeech();

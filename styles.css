@@ -465,16 +465,23 @@ select:focus {
   gap: 8px;
 }
 
-.delete-bill {
+.bill-tools {
+  display: flex;
+  gap: 6px;
+}
+
+.delete-bill,
+.edit-bill {
   display: grid;
   place-items: center;
-  width: 32px;
+  min-width: 32px;
   height: 32px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface-strong);
   color: var(--muted);
-  font-size: 22px;
+  font-size: 15px;
+  font-weight: 800;
   line-height: 1;
 }
 
@@ -482,6 +489,16 @@ select:focus {
   border-color: rgba(179, 70, 60, 0.35);
   background: rgba(179, 70, 60, 0.08);
   color: var(--expense);
+}
+
+.edit-bill:hover {
+  border-color: rgba(23, 107, 93, 0.35);
+  background: rgba(23, 107, 93, 0.08);
+  color: var(--accent);
+}
+
+.delete-bill {
+  font-size: 22px;
 }
 
 .bill-amount.expense {
@@ -586,6 +603,13 @@ select:focus {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fbfdfc;
+}
+
+.backup-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .mobile-dock {
@@ -708,6 +732,10 @@ select:focus {
   }
 
   .goal-add {
+    grid-template-columns: 1fr;
+  }
+
+  .backup-actions {
     grid-template-columns: 1fr;
   }
 

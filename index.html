@@ -184,8 +184,21 @@
         <section class="app-view" id="memberView" data-view="members">
           <div class="stats-panel">
             <div class="section-title">
-              <h2>家庭成员</h2>
+              <h2>本地数据</h2>
               <p>当前账本只保存在这台设备</p>
+            </div>
+            <div class="backup-actions">
+              <button class="primary-button" id="exportBackupButton" type="button">导出完整备份</button>
+              <button class="secondary-button" id="importBackupButton" type="button">导入备份</button>
+              <input class="hidden" id="backupFileInput" type="file" accept="application/json,.json" />
+            </div>
+            <p class="hint">完整备份会保存账单、成员和存钱目标。换手机或清理浏览器前，建议先导出。</p>
+          </div>
+
+          <div class="stats-panel">
+            <div class="section-title">
+              <h2>家庭成员</h2>
+              <p>管理本机账本成员</p>
             </div>
             <div class="member-form inline">
               <input id="memberNameInlineInput" type="text" maxlength="12" placeholder="输入名字，比如：妈妈" />
