@@ -702,45 +702,6 @@ select:focus {
   margin-bottom: 10px;
 }
 
-.icon-options {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.icon-option {
-  display: grid;
-  gap: 8px;
-  justify-items: center;
-  min-height: 152px;
-  padding: 12px 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fbfdfc;
-  text-align: center;
-}
-
-.icon-option.active {
-  border-color: rgba(18, 107, 90, 0.42);
-  background: rgba(18, 107, 90, 0.06);
-}
-
-.icon-option img {
-  width: 66px;
-  height: 66px;
-  border-radius: 16px;
-  box-shadow: 0 10px 22px rgba(28, 47, 38, 0.12);
-}
-
-.icon-option strong {
-  font-size: 14px;
-}
-
-.icon-option span {
-  color: var(--muted);
-  font-size: 12px;
-}
-
 .mobile-dock {
   position: fixed;
   left: 50%;
@@ -876,22 +837,6 @@ select:focus {
 
   .backup-actions {
     grid-template-columns: 1fr;
-  }
-
-  .icon-options {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-  }
-
-  .icon-option {
-    min-height: 136px;
-    padding: 10px 6px;
-  }
-
-  .icon-option img {
-    width: 54px;
-    height: 54px;
-    border-radius: 13px;
   }
 
   .goal-progress-top {
