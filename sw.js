@@ -1,5 +1,15 @@
-const CACHE_NAME = "family-voice-book-v3";
-const APP_FILES = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.json", "./app-icon.svg", "./apple-touch-icon.png"];
+const CACHE_NAME = "family-voice-book-v5";
+const APP_FILES = [
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./app.js",
+  "./manifest.json",
+  "./apple-touch-icon.png",
+  "./assets/icons/icon-ledger.svg",
+  "./assets/icons/icon-voice.svg",
+  "./assets/icons/icon-family-goal.svg"
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_FILES)));

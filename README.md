@@ -188,6 +188,16 @@
 - 导出 CSV 表格
 - 导出和导入完整 JSON 备份
 
+## 图标方案
+
+当前有 3 套图标方案，可以打开 `icon-showcase.html` 预览：
+
+- 方案 A：清爽账本，文件是 `assets/icons/icon-ledger.svg` 和 `assets/icons/icon-ledger-512.png`
+- 方案 B：语音记账，文件是 `assets/icons/icon-voice.svg` 和 `assets/icons/icon-voice-512.png`
+- 方案 C：家庭目标，文件是 `assets/icons/icon-family-goal.svg` 和 `assets/icons/icon-family-goal-512.png`
+
+当前默认使用方案 B，因为它更突出“语音记账”的核心功能，也更醒目。
+
 ## 放到 iPhone 上使用
 
 推荐路线：发布成一个私人使用的网页地址，然后用 iPhone Safari 添加到主屏幕。
@@ -208,7 +218,7 @@
 
 1. 注册或登录 GitHub。
 2. 新建一个仓库，比如 `family-book`。
-3. 上传当前文件夹里的这些文件：`index.html`、`styles.css`、`app.js`、`manifest.json`、`sw.js`、`app-icon.svg`、`apple-touch-icon.png`。
+3. 上传当前文件夹里的这些文件：`index.html`、`styles.css`、`app.js`、`manifest.json`、`sw.js`、`apple-touch-icon.png`、`assets/icons` 文件夹。
 4. 在仓库设置里打开 Pages。
 5. 发布后会得到一个网址。
 6. 用 iPhone 的 Safari 打开这个网址。
