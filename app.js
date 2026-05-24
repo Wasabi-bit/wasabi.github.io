@@ -1,6 +1,7 @@
 const STORAGE_KEY = "family_voice_bills_v1";
 const MEMBERS_KEY = "family_voice_members_v1";
 const ACTIVE_MEMBER_KEY = "family_voice_active_member_v1";
+const SAVING_GOAL_KEY = "family_voice_saving_goal_v1";
 
 const expenseCategories = ["吃饭", "娱乐", "出行", "日常生活"];
 const incomeCategories = ["工资", "红包", "转账", "退款", "其他收入"];
@@ -61,6 +62,19 @@ const elements = {
   todayExpense: document.querySelector("#todayExpense"),
   monthExpense: document.querySelector("#monthExpense"),
   monthIncome: document.querySelector("#monthIncome"),
+  goalTitle: document.querySelector("#goalTitle"),
+  goalSubtitle: document.querySelector("#goalSubtitle"),
+  goalSavedText: document.querySelector("#goalSavedText"),
+  goalTargetText: document.querySelector("#goalTargetText"),
+  goalFill: document.querySelector("#goalFill"),
+  goalPercent: document.querySelector("#goalPercent"),
+  goalNameInput: document.querySelector("#goalNameInput"),
+  goalTargetInput: document.querySelector("#goalTargetInput"),
+  goalSavedInput: document.querySelector("#goalSavedInput"),
+  goalAddInput: document.querySelector("#goalAddInput"),
+  saveGoalButton: document.querySelector("#saveGoalButton"),
+  addGoalSavingButton: document.querySelector("#addGoalSavingButton"),
+  resetGoalButton: document.querySelector("#resetGoalButton"),
   billList: document.querySelector("#billList"),
   emptyState: document.querySelector("#emptyState"),
   categoryBars: document.querySelector("#categoryBars"),
@@ -111,6 +125,18 @@ function saveMembers(members) {
   localStorage.setItem(MEMBERS_KEY, JSON.stringify(members));
 }
 
+function loadSavingGoal() {
+  try {
+    return JSON.parse(localStorage.getItem(SAVING_GOAL_KEY)) || { name: "", target: 0, saved: 0 };
+  } catch {
+    return { name: "", target: 0, saved: 0 };
+  }
+}
+
+function saveSavingGoal(goal) {
+  localStorage.setItem(SAVING_GOAL_KEY, JSON.stringify(goal));
+}
+
 function getActiveMember() {
   const members = loadMembers();
   const saved = localStorage.getItem(ACTIVE_MEMBER_KEY);
@@ -127,7 +153,13 @@ function setView(view) {
     node.classList.toggle("active", node.dataset.view === view);
   });
   elements.dockTabs.forEach((node) => {
-    node.classList.toggle("active", node.dataset.targetView === view);
+    const active = node.dataset.targetView === view;
+    node.classList.toggle("active", active);
+    if (active) {
+      node.classList.remove("pop");
+      void node.offsetWidth;
+      node.classList.add("pop");
+    }
   });
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -401,6 +433,63 @@ function renderMembers() {
   });
 }
 
+function renderSavingGoal() {
+  const goal = loadSavingGoal();
+  const target = Number(goal.target || 0);
+  const saved = Number(goal.saved || 0);
+  const hasGoal = Boolean(goal.name && target > 0);
+  const percent = hasGoal ? Math.min((saved / target) * 100, 100) : 0;
+  const remaining = Math.max(target - saved, 0);
+
+  elements.goalTitle.textContent = hasGoal ? goal.name : "存钱目标";
+  elements.goalSubtitle.textContent = hasGoal ? `还差 ${formatMoney(remaining)} 就完成了` : "设定一个想买的东西，慢慢靠近它。";
+  elements.goalSavedText.textContent = formatMoney(saved);
+  elements.goalTargetText.textContent = hasGoal ? `目标 ${formatMoney(target)}` : "目标 ¥0.00";
+  elements.goalFill.style.width = `${percent}%`;
+  elements.goalPercent.textContent = hasGoal ? `已完成 ${Math.round(percent)}%` : "还没有设置目标";
+  elements.goalNameInput.value = goal.name || "";
+  elements.goalTargetInput.value = target || "";
+  elements.goalSavedInput.value = saved || "";
+}
+
+function saveGoalFromForm() {
+  const name = elements.goalNameInput.value.trim();
+  const target = Number(elements.goalTargetInput.value);
+  const saved = Number(elements.goalSavedInput.value || 0);
+
+  if (!name || !target || target <= 0) {
+    elements.goalPercent.textContent = "请填写目标名称和大于 0 的目标金额。";
+    return;
+  }
+
+  saveSavingGoal({ name, target, saved: Math.max(saved, 0) });
+  renderSavingGoal();
+}
+
+function addGoalSaving() {
+  const amount = Number(elements.goalAddInput.value);
+  if (!amount || amount <= 0) {
+    elements.goalPercent.textContent = "请输入这次存入的金额。";
+    return;
+  }
+
+  const goal = loadSavingGoal();
+  if (!goal.name || !goal.target) {
+    elements.goalPercent.textContent = "先保存一个目标，再加入进度。";
+    return;
+  }
+
+  saveSavingGoal({ ...goal, saved: Number(goal.saved || 0) + amount });
+  elements.goalAddInput.value = "";
+  renderSavingGoal();
+}
+
+function resetSavingGoal() {
+  if (!confirm("确定重置存钱目标吗？")) return;
+  saveSavingGoal({ name: "", target: 0, saved: 0 });
+  renderSavingGoal();
+}
+
 function renderBills(bills) {
   elements.billList.innerHTML = "";
   elements.emptyState.style.display = bills.length ? "none" : "block";
@@ -490,6 +579,7 @@ function render() {
   const bills = loadBills();
   elements.dateLine.textContent = new Date().toLocaleDateString("zh-CN", { weekday: "long", month: "long", day: "numeric" });
   renderMembers();
+  renderSavingGoal();
   renderSummary(bills);
   renderBills(bills);
   renderCategoryBars(bills);
@@ -599,6 +689,12 @@ elements.expenseMode.addEventListener("click", () => setMode("expense"));
 elements.incomeMode.addEventListener("click", () => setMode("income"));
 elements.membersButton.addEventListener("click", openMemberDialog);
 elements.manageMembersButton.addEventListener("click", () => setView("members"));
+elements.saveGoalButton.addEventListener("click", saveGoalFromForm);
+elements.addGoalSavingButton.addEventListener("click", addGoalSaving);
+elements.resetGoalButton.addEventListener("click", resetSavingGoal);
+elements.goalAddInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") addGoalSaving();
+});
 elements.parseButton.addEventListener("click", () => {
   const text = elements.voiceText.value.trim();
   if (!text) {

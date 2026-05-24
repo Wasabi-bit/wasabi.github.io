@@ -56,6 +56,36 @@
             </article>
           </section>
 
+          <section class="goal-panel" aria-label="存钱目标">
+            <div class="section-title">
+              <div>
+                <h2 id="goalTitle">存钱目标</h2>
+                <p id="goalSubtitle">设定一个想买的东西，慢慢靠近它。</p>
+              </div>
+              <button class="text-button" id="resetGoalButton" type="button">重置</button>
+            </div>
+            <div class="goal-progress">
+              <div class="goal-progress-top">
+                <strong id="goalSavedText">¥0.00</strong>
+                <span id="goalTargetText">目标 ¥0.00</span>
+              </div>
+              <div class="goal-track" aria-hidden="true">
+                <div class="goal-fill" id="goalFill"></div>
+              </div>
+              <p class="goal-percent" id="goalPercent">还没有设置目标</p>
+            </div>
+            <div class="goal-form">
+              <input id="goalNameInput" type="text" maxlength="20" placeholder="目标，比如：Switch" />
+              <input id="goalTargetInput" type="number" inputmode="decimal" min="0" step="1" placeholder="目标金额" />
+              <input id="goalSavedInput" type="number" inputmode="decimal" min="0" step="1" placeholder="已存金额" />
+              <button class="primary-button" id="saveGoalButton" type="button">保存目标</button>
+            </div>
+            <div class="goal-add">
+              <input id="goalAddInput" type="number" inputmode="decimal" min="0" step="1" placeholder="这次存入多少" />
+              <button class="secondary-button" id="addGoalSavingButton" type="button">加入进度</button>
+            </div>
+          </section>
+
           <div class="list-panel">
             <div class="section-title">
               <h2>最近账单</h2>
@@ -168,7 +198,7 @@
 
       <nav class="mobile-dock" aria-label="快捷操作">
         <button class="dock-tab active" data-target-view="home" type="button">首页</button>
-        <button class="dock-tab primary" data-target-view="record" type="button">记账</button>
+        <button class="dock-tab" data-target-view="record" type="button">记账</button>
         <button class="dock-tab" data-target-view="stats" type="button">统计</button>
         <button class="dock-tab" data-target-view="members" type="button">成员</button>
       </nav>
